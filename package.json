@@ -1,0 +1,11 @@
+{
+  "name": "multi-apps-backend",
+  "version": "1.0.0",
+  "description": "Practicing Backend of multiple apps in single project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Anish Kumar",
+  "license": "ISC"
+}
