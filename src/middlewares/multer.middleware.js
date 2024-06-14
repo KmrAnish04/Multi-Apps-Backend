@@ -1,6 +1,10 @@
 import multer from "multer";
 
- 
+
+
+////////////////////////////////////////////////////////////////////////////
+//                      Mutler File Upload Middleware
+////////////////////////////////////////////////////////////////////////////
 const storage = multer.diskStorage({
     destination: function(req, file, cb){
         cb(null, "./public/temp")
@@ -12,4 +16,7 @@ const storage = multer.diskStorage({
 
 
 
+
+
+// ***************************** Methods Exports ***************************** 
 export const upload = multer({storage});

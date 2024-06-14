@@ -6,33 +6,29 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 
 
+////////////////////////////////////////////////////////////////////////////
+//                          User Register Handler
+////////////////////////////////////////////////////////////////////////////
 const registerUser = asyncHandler( async (req, res)=>{
     
     const {fullName, email, userName, password} = req.body;
-    console.log(fullName, email, userName, password);
-
     if([fullName, email, userName, password].some(feild => feild?.trim() === "")){
         throw new ApiError(400, "All feilds are required!");
     }
     
-    const existedUser = await User.findOne({ $or: [{ userName }, { email }]});
 
-    if(existedUser){
-        throw new ApiError(401, "UserName or email already existing !!!");
-    }
+    const existedUser = await User.findOne({ $or: [{ userName }, { email }]});
+    if(existedUser){ throw new ApiError(401, "UserName or email already existing !!!"); }
 
 
     const avatarLocalPath = req.files?.avatar[0]?.path;
-
     let coverImageLocalPath;
     if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length){
         coverImageLocalPath = req.files.coverImage[0].path;
     }
 
 
-    if(!avatarLocalPath){
-        throw new ApiError(400, "Avatar file is required!!!");
-    }
+    if(!avatarLocalPath){ throw new ApiError(400, "Avatar file is required!!!"); }
 
     const avatarCloudinary = await uploadFileOnCloudinary(avatarLocalPath);
     const coverImageCloudinary = await uploadFileOnCloudinary(coverImageLocalPath);
@@ -52,30 +48,17 @@ const registerUser = asyncHandler( async (req, res)=>{
         password
     });
 
+
     const createdUser = await User.findById(user._id).select("-password -refreshToken");
+    if(!createdUser){ throw new ApiError(501, "Something Went Wrong While Registering The User!!!"); }
 
-    if(!createdUser){
-        throw new ApiError(501, "Something Went Wrong While Registering The User!!!");
-    }
-
-    return res.status(201).json(
-        new ApiResponse(201, createdUser, "User Registered Successfully!!!")
-    );
-
+    return res.status(201).json( new ApiResponse(201, createdUser, "User Registered Successfully!!!") );
 });
 
 
-
-async function generateAccessAndRefreshTokens(user){
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
-
-    user.refreshToken = refreshToken;
-    await user.save({validateBeforeSave: false}); //validateBeforeSave is set to false, to avoid validating all other feilds and just update refreshToken
-    
-    return {accessToken, refreshToken};
-}
-
+////////////////////////////////////////////////////////////////////////////
+//                          User Login Handler
+////////////////////////////////////////////////////////////////////////////
 const loginUser = asyncHandler( async(req, res) => {
 
     // **** Here needs to be check, that in loginUser route why we are not able to send data 
@@ -121,7 +104,9 @@ const loginUser = asyncHandler( async(req, res) => {
 });
 
 
-
+////////////////////////////////////////////////////////////////////////////
+//                          User Logout Handler
+////////////////////////////////////////////////////////////////////////////
 const logoutUser = asyncHandler( async (req, res)=>{
     const userId = req.user?._id;
     await User.findByIdAndUpdate(
@@ -130,23 +115,31 @@ const logoutUser = asyncHandler( async (req, res)=>{
         { new: true } // It will given you the new updated user in which refreshToken will be undefined
     );
 
-    const options = {
-        httpOnly: true,
-        secure: true
-    };
+    const options = { httpOnly: true, secure: true };
 
     res.status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(
-        new ApiResponse(
-            200,
-            {}, // data empty 
-            "User Logged Out Successfully!!!",
-        )
-    )
+    .json( new ApiResponse(200, {}, "User Logged Out Successfully!!!") );
 });
 
 
+// Some Utilities
 
+///////////////////////////////////////////
+//          Generate Tokens
+///////////////////////////////////////////
+async function generateAccessAndRefreshTokens(user){
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+    user.refreshToken = refreshToken;
+    await user.save({validateBeforeSave: false}); //validateBeforeSave is set to false, to avoid validating all other feilds and just update refreshToken
+    return {accessToken, refreshToken};
+}
+
+
+
+
+
+// ***************************** Methods Exports ***************************** 
 export { registerUser, loginUser, logoutUser };

@@ -4,6 +4,11 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import Jwt from "jsonwebtoken";
 
 
+
+
+////////////////////////////////////////////////////////////////////////////
+//                      Jwt Token Verificator Middleware
+////////////////////////////////////////////////////////////////////////////
 const verifyJwt = asyncHandler(async (req, res, next)=>{
     // ****** Here below not able to get res.header("Authorization"), need to check why ? ******
     // const accessToken = req.cookie?.accessToken || res.header("Authorization")?.replace("Bearer ", ""); 
@@ -18,4 +23,6 @@ const verifyJwt = asyncHandler(async (req, res, next)=>{
 });
 
 
+
+// ***************************** Methods Exports ***************************** 
 export { verifyJwt }
