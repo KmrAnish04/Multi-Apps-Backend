@@ -176,4 +176,4 @@ async function generateAccessAndRefreshTokens(user){
 
 
 // ***************************** Methods Exports ***************************** 
-export { registerUser, loginUser, logoutUser };
+export { registerUser, loginUser, logoutUser, refreshAccessToken };
